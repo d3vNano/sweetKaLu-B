@@ -26,7 +26,7 @@ async function insertProduct(req, res) {
             type,
         });
 
-        res.status(201).send(product);
+        res.sendStatus(201);
     } catch (err) {
         console.log(chalk.bold.red(err));
         res.status(500).send(err.message);
