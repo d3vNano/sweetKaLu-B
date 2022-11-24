@@ -34,9 +34,9 @@ export function authValidation(req, res, next) {
                     .status(401)
                     .send({ message: "Token expirado.\nFaça login novamente" });
             }
-            console.log(error.name);
+            return res.sendStatus(500);
         }
-        return res.sendStatus(400);
+        return res.sendStatus(500);
     }
 
     next();
