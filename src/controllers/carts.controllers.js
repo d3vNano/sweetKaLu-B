@@ -2,12 +2,11 @@ import dayjs from "dayjs";
 import { cartsCollection } from "../database/collections.js";
 
 export async function getCarts(req, res) {
-    const { username, id } = res.locals.user;
-    const user = { username, userId: id };
+    const user = req.user;
 
     try {
         const cart = await cartsCollection.findOne({
-            userId: user.userId,
+            userId: user.id,
             status: "open",
         });
 
@@ -29,7 +28,7 @@ export async function getCarts(req, res) {
 }
 
 export async function addCartItem(req, res) {
-    const user = res.locals.user;
+    const user = req.user;
     const product = req.product;
 
     try {
@@ -80,7 +79,7 @@ export async function addCartItem(req, res) {
 }
 
 export async function removeCart(req, res) {
-    const user = res.locals.user;
+    const user = req.user;
 
     try {
         const { deletedCount } = await cartsCollection.deleteOne({

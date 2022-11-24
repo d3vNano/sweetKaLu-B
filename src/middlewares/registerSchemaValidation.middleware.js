@@ -13,7 +13,7 @@ export function registerSchemaValidation(req, res, next) {
     }
     delete newUser.repeatPassword;
 
-    res.locals.newUser = newUser;
+    req.newUser = newUser;
 
     next();
 }

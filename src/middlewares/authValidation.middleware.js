@@ -24,10 +24,19 @@ export function authValidation(req, res, next) {
         }
 
         const user = jwt.verify(token, process.env.SECRET_JWT);
-        res.locals.user = user;
-    } catch {
-        console.log("Erro JWT");
-        return res.sendStatus(401);
+
+        req.user = user;
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            console.log({ ...error });
+            if (error.name === "TokenExpiredError") {
+                return res
+                    .status(401)
+                    .send({ message: "Token expirado.\nFaça login novamente" });
+            }
+            console.log(error.name);
+        }
+        return res.sendStatus(400);
     }
 
     next();

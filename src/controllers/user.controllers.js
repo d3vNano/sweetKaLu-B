@@ -1,14 +1,10 @@
-import {
-    sessionsCollection,
-    usersCollection,
-} from "../database/collections.js";
+import { usersCollection } from "../database/collections.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { ObjectId } from "mongodb";
 
 export async function registerUser(req, res) {
-    const { username, email, phone, password } = res.locals.newUser;
+    const { username, email, phone, password } = req.newUser;
 
     try {
         const newUserFind = await usersCollection.findOne({ email });
@@ -32,35 +28,24 @@ export async function registerUser(req, res) {
 
 export async function loginUser(req, res) {
     dotenv.config();
-    const { email, password } = res.locals.user;
+    const { email, password } = req.user;
 
     try {
         const userFind = await usersCollection.findOne({ email });
 
         if (!userFind) {
-            return res.status(400).send({ message: "Usuario nao cadastrado" });
+            return res.status(400).send({ message: "Usuário não cadastrado" });
         }
 
         if (userFind && bcrypt.compareSync(password, userFind.password)) {
             delete userFind.password;
 
-            const isUserLogged = await sessionsCollection.findOne({
-                userId: userFind._id,
-            });
-
             const generateToken = (id, username) =>
-                jwt.sign({ id, username }, process.env.SECRET_JWT);
-
-            let token = "";
-            if (isUserLogged) {
-                token = isUserLogged.token;
-            } else {
-                token = generateToken(userFind._id, userFind.username);
-                await sessionsCollection.insertOne({
-                    token,
-                    userId: userFind._id,
+                jwt.sign({ id, username }, process.env.SECRET_JWT, {
+                    expiresIn: "1d",
                 });
-            }
+
+            const token = generateToken(userFind._id, userFind.username);
 
             return res.send({
                 id: userFind._id,
@@ -71,24 +56,6 @@ export async function loginUser(req, res) {
         } else {
             return res.sendStatus(401);
         }
-    } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
-    }
-}
-
-export async function logoutUser(req, res) {
-    const user = res.locals.user;
-    try {
-        const { deletedCount } = await sessionsCollection.deleteOne({
-            userId: new ObjectId(user.id),
-        });
-        if (!deletedCount) {
-            return res
-                .status(404)
-                .send({ message: "Usuário já se encontrava deslogado" });
-        }
-        res.sendStatus(200);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
