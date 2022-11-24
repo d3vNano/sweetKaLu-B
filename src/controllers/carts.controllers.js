@@ -79,3 +79,15 @@ export async function addCartItem(req, res) {
         res.sendStatus(500);
     }
 }
+
+export async function removeCart(req, res) {
+    const user = res.locals.user;
+
+    try {
+        await cartsCollection.deleteOne({ userId: user.id, status: "open" });
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
