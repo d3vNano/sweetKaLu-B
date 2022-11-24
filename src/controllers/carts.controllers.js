@@ -70,7 +70,6 @@ export async function addCartItem(req, res) {
                 date: dayjs().format("DD-MM-YYYY HH:mm"),
             };
 
-            console.log(insertDoc);
             await cartsCollection.insertOne(insertDoc);
             res.sendStatus(201);
         }
@@ -84,7 +83,15 @@ export async function removeCart(req, res) {
     const user = res.locals.user;
 
     try {
-        await cartsCollection.deleteOne({ userId: user.id, status: "open" });
+        const { deletedCount } = await cartsCollection.deleteOne({
+            userId: user.id,
+            status: "open",
+        });
+        if (!deletedCount) {
+            return res
+                .status(404)
+                .send({ message: "Nenhum carrinho encontrado" });
+        }
         res.sendStatus(200);
     } catch (error) {
         console.log(error);
