@@ -15,6 +15,12 @@ export async function getCarts(req, res) {
             return res.status(400).send({ message: "Carrinho não encontrado" });
         }
 
+        cart.totalItens = cart.products.length;
+        cart.totalPrice = 0;
+        cart.products.forEach((e) => {
+            cart.totalPrice += e.price * e.quantity;
+        });
+
         res.send(cart);
     } catch (error) {
         console.log(error);
