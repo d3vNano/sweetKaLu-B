@@ -15,6 +15,12 @@ export async function getCarts(req, res) {
             return res.status(400).send({ message: "Carrinho não encontrado" });
         }
 
+        cart.totalItens = cart.products.length;
+        cart.totalPrice = 0;
+        cart.products.forEach((e) => {
+            cart.totalPrice += e.price * e.quantity;
+        });
+
         res.send(cart);
     } catch (error) {
         console.log(error);
@@ -37,9 +43,23 @@ export async function addCartItem(req, res) {
         });
 
         if (cart) {
+            const finderProduct = (e) => {
+                return e._id.toString() === product._id.toString();
+            };
+            const productFind = cart.products.find((e) => finderProduct(e));
+            const indexProductFind = cart.products.findIndex((e) =>
+                finderProduct(e)
+            );
+
+            const newProductsList = [...cart.products];
+            if (productFind) {
+                newProductsList[indexProductFind].quantity += product.quantity;
+            } else {
+                newProductsList.push(product);
+            }
+
             const filter = { userId: user.id };
-            const updateDoc = { $push: { products: product } };
-            console.log(cart);
+            const updateDoc = { $set: { products: newProductsList } };
             await cartsCollection.updateOne(filter, updateDoc);
             res.sendStatus(204);
         } else {
