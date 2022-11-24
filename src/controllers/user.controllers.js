@@ -5,6 +5,7 @@ import {
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { ObjectId } from "mongodb";
 
 export async function registerUser(req, res) {
     const { username, email, phone, password } = res.locals.newUser;
@@ -31,9 +32,6 @@ export async function registerUser(req, res) {
 
 export async function loginUser(req, res) {
     dotenv.config();
-
-    console.log(res.locals.user);
-
     const { email, password } = res.locals.user;
 
     try {
@@ -43,8 +41,6 @@ export async function loginUser(req, res) {
             return res.status(400).send({ message: "Usuario nao cadastrado" });
         }
 
-        console.log(userFind);
-
         if (userFind && bcrypt.compareSync(password, userFind.password)) {
             delete userFind.password;
 
@@ -53,9 +49,7 @@ export async function loginUser(req, res) {
             });
 
             const generateToken = (id, username) =>
-                jwt.sign({ id, username }, process.env.SECRET_JWT, {
-                    expiresIn: 86400,
-                });
+                jwt.sign({ id, username }, process.env.SECRET_JWT);
 
             let token = "";
             if (isUserLogged) {
@@ -77,6 +71,24 @@ export async function loginUser(req, res) {
         } else {
             return res.sendStatus(401);
         }
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
+export async function logoutUser(req, res) {
+    const user = res.locals.user;
+    try {
+        const { deletedCount } = await sessionsCollection.deleteOne({
+            userId: new ObjectId(user.id),
+        });
+        if (!deletedCount) {
+            return res
+                .status(404)
+                .send({ message: "Usuário já se encontrava deslogado" });
+        }
+        res.sendStatus(200);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
