@@ -8,6 +8,18 @@ import { ObjectId } from "mongodb";
 import dayjs from "dayjs";
 
 export async function receiveOrder(req, res) {
+    const order = req.order;
+
+    try {
+        await ordersCollection.insertOne(order);
+        res.send(order);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
+export async function closeOrder(req, res) {
     const user = req.user;
     const address = req.address;
     const cart = req.cart;
@@ -21,7 +33,7 @@ export async function receiveOrder(req, res) {
             $set: { address },
         });
 
-        // Upgrade stock
+        // Update stock
         cart.products.forEach(async (product) => {
             const filterProduct = { _id: product._id };
             if (product.stock !== "true") {
