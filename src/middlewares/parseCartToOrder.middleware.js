@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export async function parseCartToOrder(req, res, next) {
     const cart = req.cart;
 
@@ -11,6 +13,8 @@ export async function parseCartToOrder(req, res, next) {
             subtotalPrice: cart.subtotalPrice,
             deliveryFee,
             totalPrice,
+            status: "processing",
+            createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
         };
         req.order = order;
     } catch (error) {

@@ -61,7 +61,7 @@ export async function addCartItem(req, res) {
                 userId: user.id,
                 products: [product],
                 status: "opened",
-                date: dayjs().format("DD-MM-YYYY HH:mm"),
+                createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
             };
 
             await cartsCollection.insertOne(insertDoc);
