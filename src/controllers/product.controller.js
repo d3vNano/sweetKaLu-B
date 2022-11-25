@@ -61,6 +61,7 @@ async function getProduct(req, res) {
         const cartUser = await cartsCollection.findOne({
             userId: user.id,
             status: "opened",
+
             "products._id": { $eq: new ObjectId(id) },
         });
         if (!cartUser) {
