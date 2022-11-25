@@ -1,6 +1,10 @@
 import chalk from "chalk";
+import { ObjectId } from "mongodb";
 
-import { productsCollection } from "../database/collections.js";
+import {
+    cartsCollection,
+    productsCollection,
+} from "../database/collections.js";
 
 async function insertProduct(req, res) {
     const {
@@ -43,4 +47,31 @@ async function getProducts(req, res) {
     }
 }
 
-export { insertProduct, getProducts };
+async function getProduct(req, res) {
+    const { id } = req.params;
+    const user = req.user;
+    try {
+        const product = await productsCollection.findOne({
+            _id: new ObjectId(id),
+        });
+
+        const cartUser = await cartsCollection.findOne({
+            userId: user.id,
+            status: "open",
+            "products._id": { $eq: new ObjectId(id) },
+        });
+        if (!cartUser) {
+            return res.send({ ...product, stockToReserve: 0 });
+        }
+
+        const productCart = cartUser.products.find(
+            (prod) => prod._id.toString() === id
+        );
+        res.send(productCart);
+    } catch (err) {
+        console.log(chalk.bold.red(err));
+        res.status(500).send(err.message);
+    }
+}
+
+export { insertProduct, getProducts, getProduct };

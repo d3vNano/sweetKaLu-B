@@ -20,8 +20,8 @@ export async function parseCartToOrder(req, res, next) {
         cart.totalItens = 0;
         cart.subtotalPrice = 0;
         cart.products.forEach((e) => {
-            cart.totalItens += e.quantity;
-            cart.subtotalPrice += e.price * e.quantity;
+            cart.totalItens += e.stockToReserve;
+            cart.subtotalPrice += e.price * e.stockToReserve;
         });
 
         const deliveryFee = 10;
