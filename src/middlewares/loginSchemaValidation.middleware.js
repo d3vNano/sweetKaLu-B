@@ -11,7 +11,7 @@ export function loginSchemaValidation(req, res, next) {
         res.status(422).send({ message });
         return;
     }
-    res.locals.user = user;
+    req.user = user;
 
     next();
 }

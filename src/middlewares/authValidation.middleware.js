@@ -24,10 +24,14 @@ export function authValidation(req, res, next) {
         }
 
         const user = jwt.verify(token, process.env.SECRET_JWT);
-        res.locals.user = user;
-    } catch {
-        console.log("Erro JWT");
-        return res.sendStatus(401);
+
+        req.user = user;
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            console.log({ ...error });
+            return res.status(401).send({ message: error.message });
+        }
+        return res.sendStatus(500);
     }
 
     next();

@@ -1,13 +1,10 @@
-import {
-    sessionsCollection,
-    usersCollection,
-} from "../database/collections.js";
+import { usersCollection } from "../database/collections.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 export async function registerUser(req, res) {
-    const { username, email, phone, password } = res.locals.newUser;
+    const { username, email, phone, password } = req.newUser;
 
     try {
         const newUserFind = await usersCollection.findOne({ email });
@@ -31,47 +28,31 @@ export async function registerUser(req, res) {
 
 export async function loginUser(req, res) {
     dotenv.config();
-
-    console.log(res.locals.user);
-
-    const { email, password } = res.locals.user;
+    const { email, password } = req.user;
 
     try {
         const userFind = await usersCollection.findOne({ email });
 
         if (!userFind) {
-            return res.status(400).send({ message: "Usuario nao cadastrado" });
+            return res.status(400).send({ message: "Usuário não cadastrado" });
         }
-
-        console.log(userFind);
 
         if (userFind && bcrypt.compareSync(password, userFind.password)) {
             delete userFind.password;
 
-            const isUserLogged = await sessionsCollection.findOne({
-                userId: userFind._id,
-            });
-
             const generateToken = (id, username) =>
                 jwt.sign({ id, username }, process.env.SECRET_JWT, {
-                    expiresIn: 86400,
+                    expiresIn: "1d",
                 });
 
-            let token = "";
-            if (isUserLogged) {
-                token = isUserLogged.token;
-            } else {
-                token = generateToken(userFind._id, userFind.username);
-                await sessionsCollection.insertOne({
-                    token,
-                    userId: userFind._id,
-                });
-            }
+            const token = generateToken(userFind._id, userFind.username);
 
             return res.send({
                 id: userFind._id,
                 username: userFind.username,
                 email: userFind.email,
+                phone: userFind.phone,
+                address: userFind?.address,
                 token,
             });
         } else {
