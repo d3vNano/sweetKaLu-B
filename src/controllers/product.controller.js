@@ -55,9 +55,13 @@ async function getProduct(req, res) {
             _id: new ObjectId(id),
         });
 
+        if (!product) {
+            return res.status(404).send({ message: "Produto inexistente" });
+        }
         const cartUser = await cartsCollection.findOne({
             userId: user.id,
-            status: "open",
+            status: "opened",
+
             "products._id": { $eq: new ObjectId(id) },
         });
         if (!cartUser) {

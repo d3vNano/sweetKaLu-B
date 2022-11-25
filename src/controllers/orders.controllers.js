@@ -16,7 +16,8 @@ export async function receiveOrder(req, res) {
         const filterUser = {
             _id: new ObjectId(user.id),
         };
-        const userFinder = await usersCollection.updateOne(filterUser, {
+
+        await usersCollection.updateOne(filterUser, {
             $set: { address },
         });
 
@@ -37,10 +38,12 @@ export async function receiveOrder(req, res) {
             address,
             dateOrder: dayjs().format("DD-MM-YYYY HH:mm"),
         };
+        const { insertedId } = await ordersCollection.insertOne(order);
 
-        await cartsCollection.deleteOne({ _id: cart._id });
-
-        await ordersCollection.insertOne(order);
+        await cartsCollection.updateOne(
+            { _id: cart._id },
+            { $set: { status: "closed", orderId: insertedId } }
+        );
 
         res.send(order);
     } catch (error) {

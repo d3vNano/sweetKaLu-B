@@ -9,7 +9,7 @@ export async function parseCartToOrder(req, res, next) {
         const cart = await cartsCollection.findOne({
             _id: new ObjectId(id),
             userId: user.id,
-            status: "open",
+            status: "opened",
         });
         if (!cart) {
             return res.status(404).send({

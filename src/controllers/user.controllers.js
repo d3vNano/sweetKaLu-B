@@ -34,7 +34,7 @@ export async function loginUser(req, res) {
         const userFind = await usersCollection.findOne({ email });
 
         if (!userFind) {
-            return res.status(400).send({ message: "Usuário não cadastrado" });
+            return res.status(401).send({ message: "Usuário não cadastrado" });
         }
 
         if (userFind && bcrypt.compareSync(password, userFind.password)) {
@@ -50,9 +50,6 @@ export async function loginUser(req, res) {
             return res.send({
                 id: userFind._id,
                 username: userFind.username,
-                email: userFind.email,
-                phone: userFind.phone,
-                address: userFind?.address,
                 token,
             });
         } else {
