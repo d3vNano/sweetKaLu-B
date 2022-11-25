@@ -24,7 +24,7 @@ export async function receiveOrder(req, res) {
         cart.products.forEach(async (product) => {
             const filterProduct = { _id: product._id };
             if (product.stock !== "true") {
-                const newStock = product.stock - product.quantity;
+                const newStock = product.stock - product.stockToReserve;
                 await productsCollection.updateOne(filterProduct, {
                     $set: { stock: newStock },
                 });

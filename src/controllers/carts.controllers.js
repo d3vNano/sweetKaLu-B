@@ -17,8 +17,8 @@ export async function getCarts(req, res) {
         cart.totalItens = 0;
         cart.subtotalPrice = 0;
         cart.products.forEach((e) => {
-            cart.totalItens += e.quantity;
-            cart.subtotalPrice += e.price * e.quantity;
+            cart.totalItens += e.stockToReserve;
+            cart.subtotalPrice += e.price * e.stockToReserve;
         });
 
         res.send(cart);
@@ -53,7 +53,8 @@ export async function addCartItem(req, res) {
 
             const newProductsList = [...cart.products];
             if (productFind) {
-                newProductsList[indexProductFind].quantity += product.quantity;
+                newProductsList[indexProductFind].stockToReserve +=
+                    product.stockToReserve;
             } else {
                 newProductsList.push(product);
             }

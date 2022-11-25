@@ -55,16 +55,13 @@ async function getProduct(req, res) {
             _id: new ObjectId(id),
         });
 
-        console.log(user.id);
-        console.log(id);
-
         const cartUser = await cartsCollection.findOne({
             userId: user.id,
             status: "open",
             "products._id": { $eq: new ObjectId(id) },
         });
         if (!cartUser) {
-            return res.send({ ...product, quantity: 0 });
+            return res.send({ ...product, stockToReserve: 0 });
         }
 
         const productCart = cartUser.products.find(
