@@ -2,14 +2,9 @@ import dayjs from "dayjs";
 import { cartsCollection } from "../database/collections.js";
 
 export async function getCarts(req, res) {
-    const user = req.user;
+    const cart = req.cart;
 
     try {
-        const cart = await cartsCollection.findOne({
-            userId: user.id,
-            status: "opened",
-        });
-
         if (!cart) {
             return res
                 .status(400)
@@ -32,17 +27,13 @@ export async function getCarts(req, res) {
 
 export async function addCartItem(req, res) {
     const user = req.user;
+    const cart = req.cart;
     const product = req.product;
 
     try {
         if (!product) {
             return res.sendStatus(500);
         }
-
-        const cart = await cartsCollection.findOne({
-            userId: user.id,
-            status: "opened",
-        });
 
         if (cart) {
             const finderProduct = (e) => {
@@ -55,7 +46,7 @@ export async function addCartItem(req, res) {
 
             const newProductsList = [...cart.products];
             if (productFind) {
-                newProductsList[indexProductFind].stockToReserve +=
+                newProductsList[indexProductFind].stockToReserve =
                     product.stockToReserve;
             } else {
                 newProductsList.push(product);
@@ -91,9 +82,10 @@ export async function removeCart(req, res) {
             status: "opened",
         });
         if (!deletedCount) {
-            return res
-                .status(404)
-                .send({ message: "Nenhum carrinho encontrado" });
+            return res.status(404).send({
+                message:
+                    "Nenhum carrinho em aberto encontrado para ser excluído",
+            });
         }
         res.sendStatus(200);
     } catch (error) {

@@ -106,4 +106,5 @@ dist
 # TernJS port file
 .eslintrc.js
 .vscode
-tests-data.js
+sketch.js
+mock.js
