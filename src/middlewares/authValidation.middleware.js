@@ -29,12 +29,7 @@ export function authValidation(req, res, next) {
     } catch (error) {
         if (error instanceof jwt.JsonWebTokenError) {
             console.log({ ...error });
-            if (error.name === "TokenExpiredError") {
-                return res
-                    .status(401)
-                    .send({ message: "Token expirado.\nFaça login novamente" });
-            }
-            return res.sendStatus(500);
+            return res.status(401).send({ message: error.message });
         }
         return res.sendStatus(500);
     }

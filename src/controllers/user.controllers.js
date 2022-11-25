@@ -51,6 +51,8 @@ export async function loginUser(req, res) {
                 id: userFind._id,
                 username: userFind.username,
                 email: userFind.email,
+                phone: userFind.phone,
+                address: userFind?.address,
                 token,
             });
         } else {
