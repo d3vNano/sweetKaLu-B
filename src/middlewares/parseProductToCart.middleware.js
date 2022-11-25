@@ -12,6 +12,12 @@ export async function parseProductToCart(req, res, next) {
         if (!product) {
             return res.status(404).send({ message: "Produto não encontrado" });
         }
+        if (product.stock < quantity) {
+            return res
+                .status(409)
+                .send({ message: "Quantidade deve ser menor do que estoque" });
+        }
+
         const productCart = { ...product, quantity };
         req.product = productCart;
     } catch (error) {

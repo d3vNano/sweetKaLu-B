@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
@@ -6,7 +7,7 @@ export function authValidation(req, res, next) {
     const { authorization } = req.headers;
     try {
         if (!authorization) {
-            console.log("Sem campo authorization");
+            console.log(chalk.bold.red("Sem campo authorization"));
             return res.sendStatus(401);
         }
 
@@ -28,7 +29,7 @@ export function authValidation(req, res, next) {
         req.user = user;
     } catch (error) {
         if (error instanceof jwt.JsonWebTokenError) {
-            console.log({ ...error });
+            console.log(chalk.bold.red({ ...error }));
             return res.status(401).send({ message: error.message });
         }
         return res.sendStatus(500);
