@@ -7,11 +7,13 @@ export async function getCarts(req, res) {
     try {
         const cart = await cartsCollection.findOne({
             userId: user.id,
-            status: "open",
+            status: "opened",
         });
 
         if (!cart) {
-            return res.status(400).send({ message: "Carrinho não encontrado" });
+            return res
+                .status(400)
+                .send({ message: "Carrinho em aberto não encontrado" });
         }
 
         cart.totalItens = 0;
@@ -39,7 +41,7 @@ export async function addCartItem(req, res) {
 
         const cart = await cartsCollection.findOne({
             userId: user.id,
-            status: "open",
+            status: "opened",
         });
 
         if (cart) {
@@ -67,7 +69,7 @@ export async function addCartItem(req, res) {
             const insertDoc = {
                 userId: user.id,
                 products: [product],
-                status: "open",
+                status: "opened",
                 date: dayjs().format("DD-MM-YYYY HH:mm"),
             };
 
@@ -86,7 +88,7 @@ export async function removeCart(req, res) {
     try {
         const { deletedCount } = await cartsCollection.deleteOne({
             userId: user.id,
-            status: "open",
+            status: "opened",
         });
         if (!deletedCount) {
             return res
