@@ -4,7 +4,20 @@ export async function parseCartToOrder(req, res, next) {
     const cart = req.cart;
 
     try {
+        if (!cart) {
+            return res
+                .status(400)
+                .send({ message: "Usuário sem carrinho em aberto" });
+        }
+
         const deliveryFee = 10;
+        cart.totalItens = 0;
+        cart.subtotalPrice = 0;
+        cart.products.forEach((product) => {
+            cart.totalItens += product.stockToReserve;
+            cart.subtotalPrice += product.price * product.stockToReserve;
+        });
+
         const totalPrice = cart.subtotalPrice + deliveryFee;
 
         const order = {
@@ -13,6 +26,7 @@ export async function parseCartToOrder(req, res, next) {
             subtotalPrice: cart.subtotalPrice,
             deliveryFee,
             totalPrice,
+            totalItens: cart.totalItens,
             status: "processing",
             createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
         };
