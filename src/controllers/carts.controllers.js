@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import dayjs from "dayjs";
 import { cartsCollection } from "../database/collections.js";
 
@@ -6,6 +7,7 @@ export async function getCarts(req, res) {
 
     try {
         if (!cart) {
+            console.log(chalk.red("WARN: Carrinho em aberto não encontrado"));
             return res
                 .status(400)
                 .send({ message: "Carrinho em aberto não encontrado" });
@@ -32,6 +34,7 @@ export async function addCartItem(req, res) {
 
     try {
         if (!product) {
+            console.log(chalk.bold.red("Undefined product at addCartItem"));
             return res.sendStatus(500);
         }
 
@@ -52,10 +55,19 @@ export async function addCartItem(req, res) {
                 newProductsList.push(product);
             }
 
-            const filter = { userId: user.id };
-            const updateDoc = { $set: { products: newProductsList } };
-            await cartsCollection.updateOne(filter, updateDoc);
-            res.sendStatus(204);
+            const filterCart = { userId: user.id, status: "opened" };
+            const updateProductCarts = { $set: { products: newProductsList } };
+            const { modifiedCount } = await cartsCollection.updateOne(
+                filterCart,
+                updateProductCarts
+            );
+            if (!modifiedCount) {
+                console.log(chalk.red("WARN: Carrinho não foi atualizado"));
+                return res.status(400).send({
+                    message: "Erro durante o atualização do Carrinho",
+                });
+            }
+            return res.sendStatus(204);
         } else {
             const insertDoc = {
                 userId: user.id,
@@ -65,7 +77,7 @@ export async function addCartItem(req, res) {
             };
 
             await cartsCollection.insertOne(insertDoc);
-            res.sendStatus(201);
+            return res.sendStatus(201);
         }
     } catch (error) {
         console.log(error);
@@ -82,9 +94,9 @@ export async function removeCart(req, res) {
             status: "opened",
         });
         if (!deletedCount) {
+            console.log(chalk.red("WARN: Carrinho não deletado"));
             return res.status(404).send({
-                message:
-                    "Nenhum carrinho em aberto encontrado para ser excluído",
+                message: "Nenhum carrinho em aberto para ser excluído",
             });
         }
         res.sendStatus(200);
