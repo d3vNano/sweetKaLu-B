@@ -7,6 +7,7 @@ import {
 import { addItemValidation } from "../middlewares/addItemSchemaValidation.middleware.js";
 import { authValidation } from "../middlewares/authValidation.middleware.js";
 import { checkSingleOpenCart } from "../middlewares/checkSingleOpenCart.middleware.js";
+import { idValidation } from "../middlewares/idValidation.middleware.js";
 import { parseProductToCart } from "../middlewares/parseProductToCart.middleware.js";
 
 const router = Router();
@@ -16,5 +17,11 @@ router.delete("/carts/", removeCart);
 
 router.use(checkSingleOpenCart);
 router.get("/carts", getCarts);
-router.post("/carts/:id", addItemValidation, parseProductToCart, addCartItem);
+router.post(
+    "/carts/:id",
+    idValidation,
+    addItemValidation,
+    parseProductToCart,
+    addCartItem
+);
 export default router;

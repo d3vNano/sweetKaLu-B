@@ -1,6 +1,11 @@
-import { cartsCollection, ordersCollection } from "../database/collections.js";
+import {
+    cartsCollection,
+    ordersCollection,
+    usersCollection,
+} from "../database/collections.js";
 import dayjs from "dayjs";
 import { ObjectId } from "mongodb";
+import chalk from "chalk";
 
 export async function receiveOrder(req, res) {
     const user = req.user;
@@ -50,7 +55,7 @@ export async function closeOrder(req, res) {
         const orderUpdate = {
             $set: {
                 address: address,
-                status: "delivery",
+                status: "confirmed",
                 processedAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
             },
         };
@@ -89,6 +94,50 @@ export async function closeOrder(req, res) {
             message:
                 "Pedido processado. Seu Pedido está procedimento de entrega.",
         });
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
+export async function confirmOrder(req, res) {
+    const user = req.user;
+    try {
+        const orderConfirmed = await ordersCollection.findOne({
+            userId: user.id,
+            status: "confirmed",
+        });
+        if (!orderConfirmed) {
+            return res
+                .status(400)
+                .send({ message: "Nenhum Pedido com com status confirmado" });
+        }
+
+        const userFind = await usersCollection.findOne({
+            _id: new ObjectId(user.id),
+        });
+        console.log(userFind);
+        if (!userFind) {
+            console.log(
+                chalk.bold.red("ERROR: Inconsistency with Order -> User ")
+            );
+            return res.sendStatus(500);
+        }
+
+        const resObject = {
+            orderNo: orderConfirmed._id,
+            deliveryAddress: orderConfirmed.address,
+            username: userFind.username,
+            phone: userFind.phone,
+            email: userFind.email,
+        };
+
+        await ordersCollection.updateOne(
+            { _id: orderConfirmed._id },
+            { $set: { status: "delivery" } }
+        );
+
+        res.send(resObject);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
