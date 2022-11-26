@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { receiveOrder, closeOrder } from "../controllers/orders.controllers.js";
+import {
+    receiveOrder,
+    closeOrder,
+    confirmOrder,
+} from "../controllers/orders.controllers.js";
 import { addressValidation } from "../middlewares/addressSchemaValidation.middleware.js";
 import { authValidation } from "../middlewares/authValidation.middleware.js";
 import { checkOrderId } from "../middlewares/checkOrderId.middleware.js";
@@ -26,4 +30,6 @@ router.post(
     updateStock,
     closeOrder
 );
+router.get("/confirm/", confirmOrder);
+
 export default router;
