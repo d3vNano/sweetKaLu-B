@@ -28,7 +28,6 @@ export async function parseCartToOrder(req, res, next) {
             totalPrice,
             totalItens: cart.totalItens,
             status: "processing",
-            createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
         };
         req.order = order;
     } catch (error) {

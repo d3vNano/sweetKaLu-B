@@ -12,13 +12,7 @@ const router = Router();
 
 router.use(authValidation);
 
-router.get(
-    "/checkout/",
-    checkSingleOpenCart,
-    checkOrderStock,
-    parseCartToOrder,
-    receiveOrder
-);
+router.get("/checkout/", checkSingleOpenCart, parseCartToOrder, receiveOrder);
 router.post(
     "/checkout/:id",
     addressValidation,

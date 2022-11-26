@@ -12,7 +12,10 @@ export async function receiveOrder(req, res) {
             status: "processing",
         });
         if (!orderFind) {
-            await ordersCollection.insertOne(order);
+            await ordersCollection.insertOne({
+                ...order,
+                createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
+            });
             return res.send(order);
         } else {
             const orderFilter = {
