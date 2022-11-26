@@ -1,29 +1,41 @@
-import { usersCollection } from "../database/collections.js";
+import { cartsCollection, usersCollection } from "../database/collections.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import chalk from "chalk";
+import dayjs from "dayjs";
 
 export async function registerUser(req, res) {
     const { username, email, phone, password } = req.newUser;
 
     try {
-        const newUserFind = await usersCollection.findOne({ email });
-        if (newUserFind) {
-            return res.status(409).send({ message: "Usuário já cadastrado" });
-        }
-
         const passwordHash = bcrypt.hashSync(password, 10);
-        await usersCollection.insertOne({
+        const userInserted = await usersCollection.insertOne({
             username,
             email,
             phone,
             password: passwordHash,
         });
+
+        const cartInserted = await cartsCollection.insertOne({
+            userId: userInserted.insertedId.toString(),
+            products: [],
+        });
+
+        await usersCollection.updateOne(
+            { _id: userInserted.insertedId },
+            { $set: { cartId: cartInserted.insertedId.toString() } }
+        );
+        res.sendStatus(201);
     } catch (error) {
-        console.log(error);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
         res.sendStatus(500);
     }
-    res.sendStatus(201);
 }
 
 export async function loginUser(req, res) {
