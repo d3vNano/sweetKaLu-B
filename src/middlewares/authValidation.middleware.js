@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import dayjs from "dayjs";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
@@ -7,7 +8,12 @@ export function authValidation(req, res, next) {
     const { authorization } = req.headers;
     try {
         if (!authorization) {
-            console.log(chalk.bold.red("Sem campo authorization"));
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: authorization field unset"
+                )
+            );
             return res.sendStatus(401);
         }
 
@@ -15,25 +21,38 @@ export function authValidation(req, res, next) {
         const [schema, token] = parts;
 
         if (parts.length !== 2) {
-            console.log("Authorization nao e valido");
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: authorization field invalid format"
+                )
+            );
             return res.sendStatus(401);
         }
 
         if (schema !== "Bearer") {
-            console.log("Campo Bearer invalido");
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: Bearer invalid"
+                )
+            );
             return res.sendStatus(401);
         }
 
         const user = jwt.verify(token, process.env.SECRET_JWT);
-
         req.user = user;
     } catch (error) {
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
         if (error instanceof jwt.JsonWebTokenError) {
-            console.log(chalk.bold.red({ ...error }));
             return res.status(401).send({ message: error.message });
         }
         return res.sendStatus(500);
     }
-
     next();
 }
