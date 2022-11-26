@@ -8,15 +8,12 @@ export function checkOrderStock(req, res, next) {
             });
         }
 
-        cart.totalItens = 0;
-        cart.subtotalPrice = 0;
+        // TODO: contabilizar estoque baseado no stock atual
         const productToReviewStock = [];
         cart.products.forEach((product) => {
             if (product.stock < product.stockToReserve) {
                 productToReviewStock.push(product);
             }
-            cart.totalItens += product.stockToReserve;
-            cart.subtotalPrice += product.price * product.stockToReserve;
         });
 
         if (productToReviewStock.length > 0) {

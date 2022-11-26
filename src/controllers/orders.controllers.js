@@ -1,18 +1,30 @@
-import {
-    cartsCollection,
-    productsCollection,
-    usersCollection,
-    ordersCollection,
-} from "../database/collections.js";
-import { ObjectId } from "mongodb";
+import { cartsCollection, ordersCollection } from "../database/collections.js";
 import dayjs from "dayjs";
+import { ObjectId } from "mongodb";
 
 export async function receiveOrder(req, res) {
+    const user = req.user;
     const order = req.order;
 
     try {
-        await ordersCollection.insertOne(order);
-        res.send(order);
+        const orderFind = await ordersCollection.findOne({
+            userId: user.id,
+            status: "processing",
+        });
+        if (!orderFind) {
+            const { insertedId } = await ordersCollection.insertOne({
+                ...order,
+                createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
+            });
+            return res.send({ ...order, _id: insertedId });
+        } else {
+            const orderFilter = {
+                userId: user.id,
+                status: "processing",
+            };
+            await ordersCollection.updateOne(orderFilter, { $set: order });
+            return res.send({ ...order, _id: orderFind._id });
+        }
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -20,44 +32,63 @@ export async function receiveOrder(req, res) {
 }
 
 export async function closeOrder(req, res) {
-    const user = req.user;
+    const { id } = req.params;
     const address = req.address;
     const cart = req.cart;
 
     try {
-        const filterUser = {
-            _id: new ObjectId(user.id),
+        if (!cart) {
+            return res
+                .status(400)
+                .send({ message: "Usuário sem Pedido em aberto" });
+        }
+
+        const orderFilter = {
+            _id: new ObjectId(id),
+            status: "processing",
         };
-
-        await usersCollection.updateOne(filterUser, {
-            $set: { address },
-        });
-
-        // Update stock
-        cart.products.forEach(async (product) => {
-            const filterProduct = { _id: product._id };
-            if (product.stock !== "true") {
-                const newStock = product.stock - product.stockToReserve;
-                await productsCollection.updateOne(filterProduct, {
-                    $set: { stock: newStock },
-                });
-            }
-        });
-
-        const order = {
-            userId: user.id,
-            cart,
-            address,
-            dateOrder: dayjs().format("DD-MM-YYYY HH:mm"),
+        const orderUpdate = {
+            $set: {
+                address: address,
+                status: "delivery",
+                processedAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
+            },
         };
-        const { insertedId } = await ordersCollection.insertOne(order);
-
-        await cartsCollection.updateOne(
-            { _id: cart._id },
-            { $set: { status: "closed", orderId: insertedId } }
+        const { modifiedCount } = await ordersCollection.updateOne(
+            orderFilter,
+            orderUpdate
         );
+        if (!modifiedCount) {
+            return res.status(400).send({
+                message: "Erro durante o processamento do Pedido de Compra",
+            });
+        }
 
-        res.send(order);
+        const cartFilter = {
+            _id: cart._id,
+            status: "opened",
+        };
+        const cartUpdate = {
+            $set: {
+                status: "closed",
+                orderId: id,
+                closedAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
+            },
+        };
+        const { matchedCount } = await cartsCollection.updateOne(
+            cartFilter,
+            cartUpdate
+        );
+        if (!matchedCount) {
+            return res.status(400).send({
+                message: "Erro durante o atualização do status do Carrinho",
+            });
+        }
+
+        res.send({
+            message:
+                "Pedido processado. Seu Pedido está procedimento de entrega.",
+        });
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
