@@ -8,6 +8,7 @@ import { checkSingleOpenCart } from "../middlewares/checkSingleOpenCart.middlewa
 import { parseCartToOrder } from "../middlewares/parseCartToOrder.middleware.js";
 import { updateUserAddress } from "../middlewares/updateUserAddress.middleware.js";
 import { updateStock } from "../middlewares/updateStock.middleware.js";
+import { idValidation } from "../middlewares/idValidation.middleware.js";
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use(authValidation);
 router.get("/checkout/", checkSingleOpenCart, parseCartToOrder, receiveOrder);
 router.post(
     "/checkout/:id",
+    idValidation,
     addressValidation,
     updateUserAddress,
     checkOrderId,
