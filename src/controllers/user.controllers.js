@@ -46,10 +46,16 @@ export async function loginUser(req, res) {
         const userFind = await usersCollection.findOne({ email });
 
         if (!userFind) {
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: user unregistered"
+                )
+            );
             return res.status(401).send({ message: "Usuário não cadastrado" });
         }
 
-        if (userFind && bcrypt.compareSync(password, userFind.password)) {
+        if (bcrypt.compareSync(password, userFind.password)) {
             delete userFind.password;
 
             const generateToken = (id, username) =>
@@ -60,15 +66,25 @@ export async function loginUser(req, res) {
             const token = generateToken(userFind._id, userFind.username);
 
             return res.send({
-                id: userFind._id,
                 username: userFind.username,
                 token,
             });
         } else {
-            return res.sendStatus(401);
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: user incorrect password"
+                )
+            );
+            return res.status(401).send({ message: "Senha errada" });
         }
     } catch (error) {
-        console.log(error);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
         res.sendStatus(500);
     }
 }
