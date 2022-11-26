@@ -57,11 +57,11 @@ export async function addCartItem(req, res) {
 
             const filterCart = { userId: user.id, status: "opened" };
             const updateProductCarts = { $set: { products: newProductsList } };
-            const { modifiedCount } = await cartsCollection.updateOne(
+            const { matchedCount } = await cartsCollection.updateOne(
                 filterCart,
                 updateProductCarts
             );
-            if (!modifiedCount) {
+            if (!matchedCount) {
                 console.log(chalk.red("WARN: Carrinho não foi atualizado"));
                 return res.status(400).send({
                     message: "Erro durante o atualização do Carrinho",

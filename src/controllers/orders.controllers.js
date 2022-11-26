@@ -12,18 +12,18 @@ export async function receiveOrder(req, res) {
             status: "processing",
         });
         if (!orderFind) {
-            await ordersCollection.insertOne({
+            const { insertedId } = await ordersCollection.insertOne({
                 ...order,
                 createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
             });
-            return res.send(order);
+            return res.send({ ...order, _id: insertedId });
         } else {
             const orderFilter = {
                 userId: user.id,
                 status: "processing",
             };
             await ordersCollection.updateOne(orderFilter, { $set: order });
-            return res.send(orderFind);
+            return res.send({ ...order, _id: orderFind._id });
         }
     } catch (error) {
         console.log(error);
