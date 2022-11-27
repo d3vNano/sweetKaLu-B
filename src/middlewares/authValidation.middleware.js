@@ -14,7 +14,7 @@ export function authValidation(req, res, next) {
                     "- BAD_REQUEST: authorization field unset"
                 )
             );
-            return res.sendStatus(401);
+            return res.status(401).send("Campo authorization obrigatório");
         }
 
         const parts = authorization.split(" ");
@@ -27,7 +27,7 @@ export function authValidation(req, res, next) {
                     "- BAD_REQUEST: authorization field invalid format"
                 )
             );
-            return res.sendStatus(401);
+            return res.status(401).send("Formato campo authorization inválido");
         }
 
         if (schema !== "Bearer") {
@@ -37,7 +37,7 @@ export function authValidation(req, res, next) {
                     "- BAD_REQUEST: Bearer invalid"
                 )
             );
-            return res.sendStatus(401);
+            return res.status(401).send("Bearer inválido");
         }
 
         const user = jwt.verify(token, process.env.SECRET_JWT);
