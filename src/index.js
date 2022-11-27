@@ -2,6 +2,7 @@ import chalk from "chalk";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import dayjs from "dayjs";
 
 import productRoutes from "./routes/product.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -20,5 +21,11 @@ app.use(ordersRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(chalk.bold.cyan(`[Listening ON] Port: ${PORT}`));
+    console.log(
+        chalk.bold.cyan(
+            `${dayjs().format(
+                "YYYY-MM-DD HH:mm:ss"
+            )} [Listening ON] Port: ${PORT}`
+        )
+    );
 });
