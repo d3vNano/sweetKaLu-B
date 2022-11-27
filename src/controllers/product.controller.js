@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { ObjectId } from "mongodb";
+import dayjs from "dayjs";
 
 import {
     cartsCollection,
@@ -31,9 +31,14 @@ async function insertProduct(req, res) {
         });
 
         res.sendStatus(201);
-    } catch (err) {
-        console.log(chalk.bold.red(err));
-        res.status(500).send(err.message);
+    } catch (error) {
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        res.sendStatus(500);
     }
 }
 
@@ -41,40 +46,42 @@ async function getProducts(req, res) {
     try {
         const products = await productsCollection.find().toArray();
         res.send(products);
-    } catch (err) {
-        console.log(chalk.bold.red(err));
-        res.status(500).send(err.message);
+    } catch (error) {
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        res.sendStatus(500);
     }
 }
 
 async function getProduct(req, res) {
-    const { id } = req.params;
     const user = req.user;
+    const product = req.product;
+
     try {
-        const product = await productsCollection.findOne({
-            _id: new ObjectId(id),
-        });
-
-        if (!product) {
-            return res.status(404).send({ message: "Produto inexistente" });
-        }
-        const cartUser = await cartsCollection.findOne({
+        const cartWithProduct = await cartsCollection.findOne({
             userId: user.id,
-            status: "opened",
-
-            "products._id": { $eq: new ObjectId(id) },
+            "products._id": { $eq: product._id },
         });
-        if (!cartUser) {
+        if (!cartWithProduct) {
             return res.send({ ...product, stockToReserve: 0 });
         }
 
-        const productCart = cartUser.products.find(
-            (prod) => prod._id.toString() === id
+        const productCart = cartWithProduct.products.find(
+            (p) => p._id === product._id
         );
         res.send(productCart);
-    } catch (err) {
-        console.log(chalk.bold.red(err));
-        res.status(500).send(err.message);
+    } catch (error) {
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        res.sendStatus(500);
     }
 }
 
