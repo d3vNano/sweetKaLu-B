@@ -7,7 +7,7 @@ export async function updateStock(req, res, next) {
     const order = req.order;
 
     try {
-        if (order.status !== "process") {
+        if (order.status !== "processing") {
             console.log(
                 chalk.greenBright(
                     dayjs().format("YYYY-MM-DD HH:mm:ss"),
