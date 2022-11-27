@@ -1,18 +1,27 @@
+import chalk from "chalk";
+import dayjs from "dayjs";
 import { productsCollection } from "../database/collections.js";
 
 export async function updateStock(req, res, next) {
     const cart = req.cart;
+    const order = req.order;
 
     try {
+        if (order.status !== "process") {
+            console.log(
+                chalk.greenBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- ALERT: status order",
+                    order.status
+                )
+            );
+            return res.status(202).send({
+                message: `Seu pedido encontra-se ${order.status}`,
+            });
+        }
         cart.products.forEach(async (product) => {
-            const filterProduct = { _id: product._id };
             if (product.stock !== "true") {
-                const newStock = product.stock - product.stockToReserve;
-                if (newStock < 0) {
-                    return res.status(409).send({
-                        message: `Reveja a quantidade de ${product.name}. Stock atual: ${product.stock}`,
-                    });
-                }
+                const filterProduct = { _id: product._id };
                 const { modifiedCount } = await productsCollection.updateOne(
                     filterProduct,
                     {
@@ -21,7 +30,10 @@ export async function updateStock(req, res, next) {
                 );
                 if (!modifiedCount) {
                     console.log(
-                        chalk.bold.red("Erro durante o atualização do Stock")
+                        chalk.magentaBright(
+                            dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                            "- ERROR: stock update unsuccessful"
+                        )
                     );
                     return res.status(400).send({
                         message: "Erro durante o atualização do Stock",
@@ -30,8 +42,13 @@ export async function updateStock(req, res, next) {
             }
         });
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
     next();
 }
