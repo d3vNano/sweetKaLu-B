@@ -119,7 +119,7 @@ export async function confirmOrder(req, res) {
         console.log(userFind);
         if (!userFind) {
             console.log(
-                chalk.bold.red("ERROR: Inconsistency with Order -> User ")
+                chalk.bold.redBright("- ERROR: inconsistency with Order -> User ")
             );
             return res.sendStatus(500);
         }

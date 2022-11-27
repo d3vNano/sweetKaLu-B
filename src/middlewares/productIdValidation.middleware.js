@@ -39,7 +39,7 @@ export async function productIdValidation(req, res, next) {
                 error.message
             )
         );
-        res.sendStatus(500);
+        return res.sendStatus(500);
     }
     next();
 }
