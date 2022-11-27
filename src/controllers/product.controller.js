@@ -38,7 +38,7 @@ async function insertProduct(req, res) {
                 error.message
             )
         );
-        res.sendStatus(500);
+        return res.sendStatus(500);
     }
 }
 
@@ -53,7 +53,7 @@ async function getProducts(req, res) {
                 error.message
             )
         );
-        res.sendStatus(500);
+        return res.sendStatus(500);
     }
 }
 
@@ -81,7 +81,7 @@ async function getProduct(req, res) {
                 error.message
             )
         );
-        res.sendStatus(500);
+        return res.sendStatus(500);
     }
 }
 

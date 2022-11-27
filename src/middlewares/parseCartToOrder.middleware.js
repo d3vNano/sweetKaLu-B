@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 
 export async function parseCartToOrder(req, res, next) {
-    const cart = req.cart;
+    const user = req.cart;
 
     try {
         if (!cart) {

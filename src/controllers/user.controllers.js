@@ -34,7 +34,7 @@ export async function registerUser(req, res) {
                 error.message
             )
         );
-        res.sendStatus(500);
+        return res.sendStatus(500);
     }
 }
 
@@ -85,6 +85,6 @@ export async function loginUser(req, res) {
                 error.message
             )
         );
-        res.sendStatus(500);
+        return res.sendStatus(500);
     }
 }
