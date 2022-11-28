@@ -72,7 +72,7 @@ async function getProduct(req, res) {
         }
 
         const productCart = cartWithProduct.products.find(
-            (prod) => prod._id.toString() === product._id.toString()
+            (product) => product._id.toString() === product._id.toString()
         );
 
         res.send(productCart);
