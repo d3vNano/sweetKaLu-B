@@ -66,12 +66,13 @@ async function getProduct(req, res) {
             userId: user.id,
             "products._id": { $eq: product._id },
         });
-        // if (!cartWithProduct) {
-        //     return res.send({ ...product, stockToReserve: 0 });
-        // }
+
+        if (!cartWithProduct) {
+            return res.send({ ...product, stockToReserve: 0 });
+        }
 
         const productCart = cartWithProduct.products.find(
-            (p) => p._id.toString() === product._id.toString()
+            (prod) => prod._id.toString() === product._id.toString()
         );
 
         res.send(productCart);
