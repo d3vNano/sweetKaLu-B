@@ -40,9 +40,11 @@ export async function updateCart(req, res) {
             finderProduct(p)
         );
 
-        if (productFind) {
+        if (productFind && productCart.stockToReserve !== 0) {
             cartProductList[indexProductFind].stockToReserve =
                 productCart.stockToReserve;
+        } else if (productFind && productCart.stockToReserve === 0) {
+            cartProductList.splice(indexProductFind, 1);
         } else {
             cartProductList.push(productCart);
         }
