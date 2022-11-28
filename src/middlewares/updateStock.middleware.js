@@ -1,27 +1,27 @@
+import chalk from "chalk";
+import dayjs from "dayjs";
 import { productsCollection } from "../database/collections.js";
 
 export async function updateStock(req, res, next) {
     const cart = req.cart;
+    const currentCartProductsStock = req.currentCartProductsStock;
 
     try {
-        cart.products.forEach(async (product) => {
-            const filterProduct = { _id: product._id };
-            if (product.stock !== "true") {
-                const newStock = product.stock - product.stockToReserve;
-                if (newStock < 0) {
-                    return res.status(409).send({
-                        message: `Reveja a quantidade de ${product.name}. Stock atual: ${product.stock}`,
-                    });
-                }
+        cart.products.forEach(async (productCart) => {
+            if (productCart.stock !== "true") {
+                const filterProduct = { _id: productCart._id };
                 const { modifiedCount } = await productsCollection.updateOne(
                     filterProduct,
                     {
-                        $inc: { stock: -Number(product.stockToReserve) },
+                        $inc: { stock: -Number(productCart.stockToReserve) },
                     }
                 );
                 if (!modifiedCount) {
                     console.log(
-                        chalk.bold.red("Erro durante o atualização do Stock")
+                        chalk.magentaBright(
+                            dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                            "- ERROR: stock update unsuccessful"
+                        )
                     );
                     return res.status(400).send({
                         message: "Erro durante o atualização do Stock",
@@ -30,8 +30,13 @@ export async function updateStock(req, res, next) {
             }
         });
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
     next();
 }

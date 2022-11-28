@@ -1,21 +1,22 @@
 import chalk from "chalk";
+import dayjs from "dayjs";
 import { cartsCollection } from "../database/collections.js";
 
-export async function checkSingleOpenCart(req, res, next) {
+export async function cartValidation(req, res, next) {
     const user = req.user;
 
     try {
         const cartArray = await cartsCollection
             .find({
                 userId: user.id,
-                status: "opened",
             })
             .toArray();
 
-        if (cartArray.length > 1) {
+        if (cartArray.length !== 1) {
             console.log(
-                chalk.bold.red(
-                    "ERROR: Não deve haver mais de um Carrinho em aberto por usuário"
+                chalk.bold.redBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- ERROR: multiply carts per user"
                 )
             );
             return res.status(500).send({
@@ -23,11 +24,15 @@ export async function checkSingleOpenCart(req, res, next) {
                     "Error ao processar Carrinho!!! Lamentamos o ocorrido, Favor entre em contato com os Dev's ",
             });
         }
-        [req.cart] = cartArray;
+        req.cart = cartArray[0];
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
-
     next();
 }

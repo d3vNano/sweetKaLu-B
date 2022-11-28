@@ -1,28 +1,33 @@
-import { ObjectId } from "mongodb";
-import { productsCollection } from "../database/collections.js";
+import chalk from "chalk";
+import dayjs from "dayjs";
 
 export async function parseProductToCart(req, res, next) {
-    const { id } = req.params;
+    const product = req.product;
     const stockToReserve = req.stockToReserve;
 
     try {
-        const product = await productsCollection.findOne({
-            _id: new ObjectId(id),
-        });
-        if (!product) {
-            return res.status(404).send({ message: "Produto não encontrado" });
-        }
         if (product.stock < stockToReserve) {
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: insufficient stock"
+                )
+            );
             return res
                 .status(409)
                 .send({ message: "Quantidade deve ser menor do que estoque" });
         }
 
         const productCart = { ...product, stockToReserve };
-        req.product = productCart;
+        req.productCart = productCart;
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
     next();
 }

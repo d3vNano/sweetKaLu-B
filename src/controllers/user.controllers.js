@@ -1,29 +1,41 @@
-import { usersCollection } from "../database/collections.js";
+import { cartsCollection, usersCollection } from "../database/collections.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import chalk from "chalk";
+import dayjs from "dayjs";
 
 export async function registerUser(req, res) {
     const { username, email, phone, password } = req.newUser;
 
     try {
-        const newUserFind = await usersCollection.findOne({ email });
-        if (newUserFind) {
-            return res.status(409).send({ message: "Usuário já cadastrado" });
-        }
-
         const passwordHash = bcrypt.hashSync(password, 10);
-        await usersCollection.insertOne({
+        const userInserted = await usersCollection.insertOne({
             username,
             email,
             phone,
             password: passwordHash,
         });
+
+        const cartInserted = await cartsCollection.insertOne({
+            userId: userInserted.insertedId.toString(),
+            products: [],
+        });
+
+        await usersCollection.updateOne(
+            { _id: userInserted.insertedId },
+            { $set: { cartId: cartInserted.insertedId.toString() } }
+        );
+        res.sendStatus(201);
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
-    res.sendStatus(201);
 }
 
 export async function loginUser(req, res) {
@@ -34,10 +46,16 @@ export async function loginUser(req, res) {
         const userFind = await usersCollection.findOne({ email });
 
         if (!userFind) {
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: user unregistered"
+                )
+            );
             return res.status(401).send({ message: "Usuário não cadastrado" });
         }
 
-        if (userFind && bcrypt.compareSync(password, userFind.password)) {
+        if (bcrypt.compareSync(password, userFind.password)) {
             delete userFind.password;
 
             const generateToken = (id, username) =>
@@ -48,15 +66,25 @@ export async function loginUser(req, res) {
             const token = generateToken(userFind._id, userFind.username);
 
             return res.send({
-                id: userFind._id,
                 username: userFind.username,
                 token,
             });
         } else {
-            return res.sendStatus(401);
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: user incorrect password"
+                )
+            );
+            return res.status(401).send({ message: "Senha errada" });
         }
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
 }

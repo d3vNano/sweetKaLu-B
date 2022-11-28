@@ -1,31 +1,55 @@
-export function checkOrderStock(req, res, next) {
+import chalk from "chalk";
+import dayjs from "dayjs";
+import { productsCollection } from "../database/collections.js";
+
+export async function checkOrderStock(req, res, next) {
     const cart = req.cart;
 
     try {
-        if (!cart) {
-            return res.status(404).send({
-                message: "Carrinho não encontrado ou pertence a outro usuário",
-            });
-        }
+        const currentProductsStock = await productsCollection
+            .find({})
+            .project({ stock: 1, name: 1 })
+            .toArray();
 
-        // TODO: contabilizar estoque baseado no stock atual
+        console.log(currentProductsStock);
+
+        const cartProducts = [...cart.products];
+        const currentCartProductsStock = [];
         const productToReviewStock = [];
-        cart.products.forEach((product) => {
-            if (product.stock < product.stockToReserve) {
-                productToReviewStock.push(product);
+        cartProducts.forEach((productCart) => {
+            const productMatch = currentProductsStock.find(
+                (p) => p._id.toString() === productCart._id.toString()
+            );
+            currentCartProductsStock.push(productMatch);
+            if (productMatch.stock < productCart.stockToReserve) {
+                productToReviewStock.push(productMatch);
             }
         });
 
+        console.log(currentCartProductsStock);
+
         if (productToReviewStock.length > 0) {
-            res.status(409).send({
-                message: `Houve um reajuste no Stock, reveja os produtos ${productToReviewStock.map(
+            console.log(
+                chalk.magentaBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- BAD_REQUEST: insufficient stock at checkout"
+                )
+            );
+            return res.status(409).send({
+                message: `Houve um reajuste no estoque, reveja os produtos ${productToReviewStock.map(
                     (product) => product.name
                 )}`,
             });
         }
+        req.currentCartProductsStock = currentCartProductsStock;
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
     next();
 }

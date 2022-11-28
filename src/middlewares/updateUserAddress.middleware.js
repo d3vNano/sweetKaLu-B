@@ -14,8 +14,13 @@ export async function updateUserAddress(req, res, next) {
             $set: { address },
         });
     } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
+        console.log(
+            chalk.redBright(
+                dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                error.message
+            )
+        );
+        return res.sendStatus(500);
     }
     next();
 }

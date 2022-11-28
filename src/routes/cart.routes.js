@@ -1,27 +1,27 @@
 import { Router } from "express";
 import {
-    addCartItem,
-    getCarts,
-    removeCart,
-} from "../controllers/carts.controllers.js";
+    cleanCart,
+    getCart,
+    updateCart,
+} from "../controllers/cart.controllers.js";
 import { addItemValidation } from "../middlewares/addItemSchemaValidation.middleware.js";
 import { authValidation } from "../middlewares/authValidation.middleware.js";
-import { checkSingleOpenCart } from "../middlewares/checkSingleOpenCart.middleware.js";
-import { idValidation } from "../middlewares/idValidation.middleware.js";
+import { cartValidation } from "../middlewares/cartValidation.middleware.js";
+import { productIdValidation } from "../middlewares/productIdValidation.middleware.js";
 import { parseProductToCart } from "../middlewares/parseProductToCart.middleware.js";
 
 const router = Router();
 
 router.use(authValidation);
-router.delete("/carts/", removeCart);
+router.delete("/cart/", cleanCart);
 
-router.use(checkSingleOpenCart);
-router.get("/carts", getCarts);
-router.post(
-    "/carts/:id",
-    idValidation,
+router.use(cartValidation);
+router.get("/cart", getCart);
+router.put(
+    "/cart/:id",
     addItemValidation,
+    productIdValidation,
     parseProductToCart,
-    addCartItem
+    updateCart
 );
 export default router;
