@@ -71,10 +71,10 @@ async function getProduct(req, res) {
         }
 
         const productCart = cartWithProduct.products.find(
-            (p) => p._id === product._id
+            (p) => p._id.toString() === product._id.toString()
         );
 
-        res.send(cartWithProduct);
+        res.send(productCart);
     } catch (error) {
         console.log(
             chalk.redBright(
