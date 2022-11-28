@@ -70,11 +70,11 @@ async function getProduct(req, res) {
             return res.send({ ...product, stockToReserve: 0 });
         }
 
-        const productCart = cartWithProduct.products.find(
-            (p) => p._id.toString() === product._id.toString()
-        );
+        // const productCart = cartWithProduct.products.find(
+        //     (p) => p._id.toString() === product._id.toString()
+        // );
 
-        res.send(productCart);
+        res.send(cartWithProduct);
     } catch (error) {
         console.log(
             chalk.redBright(
