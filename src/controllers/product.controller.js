@@ -73,7 +73,8 @@ async function getProduct(req, res) {
         const productCart = cartWithProduct.products.find(
             (p) => p._id === product._id
         );
-        res.send(productCart);
+
+        res.send(cartWithProduct);
     } catch (error) {
         console.log(
             chalk.redBright(
