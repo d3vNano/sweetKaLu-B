@@ -4,28 +4,16 @@ import { productsCollection } from "../database/collections.js";
 
 export async function updateStock(req, res, next) {
     const cart = req.cart;
-    const order = req.order;
+    const currentCartProductsStock = req.currentCartProductsStock;
 
     try {
-        if (order.status !== "processing") {
-            console.log(
-                chalk.greenBright(
-                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
-                    "- ALERT: status order",
-                    order.status
-                )
-            );
-            return res.status(202).send({
-                message: `Seu pedido encontra-se ${order.status}`,
-            });
-        }
-        cart.products.forEach(async (product) => {
-            if (product.stock !== "true") {
-                const filterProduct = { _id: product._id };
+        cart.products.forEach(async (productCart) => {
+            if (productCart.stock !== "true") {
+                const filterProduct = { _id: productCart._id };
                 const { modifiedCount } = await productsCollection.updateOne(
                     filterProduct,
                     {
-                        $inc: { stock: -Number(product.stockToReserve) },
+                        $inc: { stock: -Number(productCart.stockToReserve) },
                     }
                 );
                 if (!modifiedCount) {

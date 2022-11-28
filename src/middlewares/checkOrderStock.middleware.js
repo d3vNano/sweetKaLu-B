@@ -8,21 +8,25 @@ export async function checkOrderStock(req, res, next) {
     try {
         const currentProductsStock = await productsCollection
             .find({})
-            .project({ stock: 1 })
+            .project({ stock: 1, name: 1 })
             .toArray();
 
         console.log(currentProductsStock);
 
         const cartProducts = [...cart.products];
+        const currentCartProductsStock = [];
         const productToReviewStock = [];
         cartProducts.forEach((productCart) => {
-            const product = currentProductsStock.find(
+            const productMatch = currentProductsStock.find(
                 (p) => p._id.toString() === productCart._id.toString()
             );
-            if (product.stock < productCart.stockToReserve) {
-                productToReviewStock.push(productCart);
+            currentCartProductsStock.push(productMatch);
+            if (productMatch.stock < productCart.stockToReserve) {
+                productToReviewStock.push(productMatch);
             }
         });
+
+        console.log(currentCartProductsStock);
 
         if (productToReviewStock.length > 0) {
             console.log(
@@ -32,11 +36,12 @@ export async function checkOrderStock(req, res, next) {
                 )
             );
             return res.status(409).send({
-                message: `Houve um reajuste no Stock, reveja os produtos ${productToReviewStock.map(
+                message: `Houve um reajuste no estoque, reveja os produtos ${productToReviewStock.map(
                     (product) => product.name
                 )}`,
             });
         }
+        req.currentCartProductsStock = currentCartProductsStock;
     } catch (error) {
         console.log(
             chalk.redBright(

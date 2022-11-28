@@ -10,26 +10,22 @@ import chalk from "chalk";
 export async function sendOrder(req, res) {
     const user = req.user;
     const order = req.order;
-    const cart = req.cart;
 
     try {
-        const orderFind = await ordersCollection.findOne({
+        const orderFilter = {
             userId: user.id,
             status: "processing",
-        });
-        if (!orderFind && cart.products.length > 0) {
+        };
+        const orderFind = await ordersCollection.findOne(orderFilter);
+        if (!orderFind) {
             const { insertedId } = await ordersCollection.insertOne({
                 ...order,
                 createdAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
             });
-            return res.send({ ...order, _id: insertedId });
+            return res.send({ ...order, _id: insertedId.toString() });
         } else {
-            const orderFilter = {
-                userId: user.id,
-                status: "processing",
-            };
             await ordersCollection.updateOne(orderFilter, { $set: order });
-            return res.send({ ...order, _id: orderFind._id });
+            return res.send({ ...order, _id: orderFind._id.toString() });
         }
     } catch (error) {
         console.log(
@@ -42,37 +38,13 @@ export async function sendOrder(req, res) {
     }
 }
 
-export async function closeOrder(req, res) {
+export async function confirmOrder(req, res) {
     const { id } = req.params;
     const address = req.address;
     const user = req.user;
     const order = req.order;
 
     try {
-        if (order.status === "confirmed") {
-            console.log(
-                chalk.greenBright(
-                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
-                    "- OK: status order confirmed"
-                )
-            );
-            return res.status(202).send({
-                message: "Seu pedido encontra-se confirmado",
-            });
-        }
-
-        if (order.status === "delivery") {
-            console.log(
-                chalk.greenBright(
-                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
-                    "- OK: status order delivery"
-                )
-            );
-            return res.status(202).send({
-                message: "Seu pedido encontra-se em precedimento de entrega",
-            });
-        }
-
         const orderFilter = {
             _id: new ObjectId(id),
             status: "processing",
@@ -121,22 +93,21 @@ export async function closeOrder(req, res) {
     }
 }
 
-export async function confirmOrder(req, res) {
+export async function deliveryOrder(req, res) {
+    const { id } = req.params;
     const user = req.user;
+    const order = req.order;
     try {
-        const orderConfirmed = await ordersCollection.findOne({
-            userId: user.id,
-            status: "confirmed",
-        });
-        if (!orderConfirmed) {
+        if (order.status !== "confirmed") {
             console.log(
-                chalk.redBright(
+                chalk.magentaBright(
                     dayjs().format("YYYY-MM-DD HH:mm:ss"),
-                    "- ERROR: don`t found confirmed order"
+                    "- BAD_REQUEST: status order",
+                    order.status
                 )
             );
-            return res.status(400).send({
-                message: "Não encontrado Pedido confirmado",
+            return res.status(409).send({
+                message: `Seu pedido encontra-se ${order.status}`,
             });
         }
 
@@ -155,18 +126,39 @@ export async function confirmOrder(req, res) {
             });
         }
 
+        const orderFilter = {
+            _id: new ObjectId(id),
+            status: "confirmed",
+        };
+        const orderUpdate = {
+            $set: {
+                status: "delivery",
+                deliveryAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
+            },
+        };
+        const { modifiedCount } = await ordersCollection.updateOne(
+            orderFilter,
+            orderUpdate
+        );
+        if (!modifiedCount) {
+            console.log(
+                chalk.redBright(
+                    dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                    "- ERROR: status order don`t change to confirmed"
+                )
+            );
+            return res.status(400).send({
+                message: "Erro durante o processamento do Pedido de Compra",
+            });
+        }
+
         const resObject = {
-            orderNo: orderConfirmed._id,
-            deliveryAddress: orderConfirmed.address,
+            orderNo: order._id,
+            deliveryAddress: order.address,
             username: userFind.username,
             phone: userFind.phone,
             email: userFind.email,
         };
-
-        await ordersCollection.updateOne(
-            { _id: orderConfirmed._id },
-            { $set: { status: "delivery" } }
-        );
 
         res.send(resObject);
     } catch (error) {
