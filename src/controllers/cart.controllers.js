@@ -40,7 +40,6 @@ export async function updateCart(req, res) {
             finderProduct(p)
         );
 
-        console.log(cartProductList.length);
         if (productFind && productCart.stockToReserve !== 0) {
             cartProductList[indexProductFind].stockToReserve =
                 productCart.stockToReserve;
@@ -52,7 +51,6 @@ export async function updateCart(req, res) {
 
         const filterCart = { userId: user.id };
         const updateProductsCart = {};
-        console.log(cartProductList.length);
         if (cartProductList.length === 0) {
             updateProductsCart["$set"] = {
                 userId: user.id,
@@ -67,7 +65,6 @@ export async function updateCart(req, res) {
                 modifyAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
             };
         }
-        console.log(updateProductsCart);
         const { matchedCount } = await cartsCollection.updateOne(
             filterCart,
             updateProductsCart
