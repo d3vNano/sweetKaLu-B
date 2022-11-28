@@ -74,7 +74,7 @@ async function getProduct(req, res) {
             (p) => p._id.toString() === product._id.toString()
         );
 
-        res.send(cartWithProduct);
+        res.send(productCart);
     } catch (error) {
         console.log(
             chalk.redBright(
