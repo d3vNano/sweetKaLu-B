@@ -40,22 +40,34 @@ export async function updateCart(req, res) {
             finderProduct(p)
         );
 
+        console.log(cartProductList.length);
         if (productFind && productCart.stockToReserve !== 0) {
             cartProductList[indexProductFind].stockToReserve =
                 productCart.stockToReserve;
         } else if (productFind && productCart.stockToReserve === 0) {
             cartProductList.splice(indexProductFind, 1);
-        } else {
+        } else if (!productFind && productCart.stockToReserve !== 0) {
             cartProductList.push(productCart);
         }
 
         const filterCart = { userId: user.id };
-        const updateProductsCart = {
-            $set: {
+        const updateProductsCart = {};
+        console.log(cartProductList.length);
+        if (cartProductList.length === 0) {
+            updateProductsCart["$set"] = {
+                userId: user.id,
+                products: [],
+            };
+            updateProductsCart["$unset"] = {
+                modifyAt: "",
+            };
+        } else {
+            updateProductsCart["$set"] = {
                 products: cartProductList,
                 modifyAt: dayjs().format("DD-MM-YYYY HH:mm:ss"),
-            },
-        };
+            };
+        }
+        console.log(updateProductsCart);
         const { matchedCount } = await cartsCollection.updateOne(
             filterCart,
             updateProductsCart
