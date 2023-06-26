@@ -6,7 +6,8 @@
     "main": "index.js",
     "scripts": {
         "start": "node src/index.js",
-        "dev": "nodemon src/index.js"
+        "dev": "nodemon src/index.js",
+        "restore": "node src/database/restore.js"
     },
     "repository": {
         "type": "git",
