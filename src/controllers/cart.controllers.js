@@ -10,7 +10,7 @@ export async function getCart(req, res) {
         cart.subtotalPrice = 0;
         cart.products.forEach((p) => {
             cart.totalItens += p.stockToReserve;
-            cart.subtotalPrice += p.price * p.stockToReserve;
+            cart.subtotalPrice += +p.price * p.stockToReserve;
         });
 
         res.send(cart);
