@@ -2,7 +2,7 @@
 
 <div>
 
-# SweetKalu-Backend
+# SweetKalu-Back-end
 
   <img alt="os-linux" src="https://img.shields.io/static/v1?label=os&message=Linux&color=459a2b&style=flat-square&logo=ghost" />
   <img alt="npm-8.15.0" src="https://img.shields.io/static/v1?label=npm&message=8.15.0&color=459a2b&style=flat-square" />
@@ -10,7 +10,7 @@
  
 </div>
 
-<h1 align="center"></=h1>
+<h1 align="center"></h1>
 
 Projeto de uma API para um e-commerce de sobremesas: _Sweet KaLu - A sua _**candy shop**_ preferida!_. Back-end criando e implementando um sistema de contas, venda de produtos, carrinho de compras e checkout em NodeJs com **Express** utilizando bando de dados **MongoDB**.
 
@@ -23,14 +23,15 @@ Projeto de uma API para um e-commerce de sobremesas: _Sweet KaLu - A sua _**cand
 <h1 align="center"></h1>
 
 <h4 align="center">
-    ✔️ Sweet KaLu-Frontend ✔️
+    ✔️ Sweet KaLu-Back-end ✔️
 </h4>
 
 <p align="center">
- <a href="#sweetkalu-frontend">Início</a> • 
+ <a href="#sweetkalu-back-end">Início</a> • 
  <a href="#requisitos">Começando</a> •  
  <a href="#tecnologias">Tecnologias</a> • 
- <a href="#autor">Autor</a>
+ <a href="#autor">Autor</a> • 
+ <a href="https://github.com/d3vNano/sweetKaLu-F">Front-end</a>
 </p>
 
 <h1 align="center"></h1>
