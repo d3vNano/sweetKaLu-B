@@ -1,0 +1,276 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "SweetKalu API",
+    "description": "SweetKalu API ",
+    "version": "1.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "signUp": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 20
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "format": "phone",
+            "minLength": 10,
+            "maxLength": 11
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 12
+          }
+        },
+        "example": {
+          "username": "Jose",
+          "email": "jose@test.com",
+          "phone": "85988775522",
+          "password": "jose123"
+        }
+      },
+      "signIn": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 12
+          }
+        },
+        "example": {
+          "email": "jose@test.com",
+          "password": "jose123"
+        }
+      },
+      "product": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "format": "url"
+          },
+          "name": {
+            "type": "string"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "image": "https://p7m4z9n9.stackpathcdn.com/wp-content/uploads/2019/12/palhaitalianareceitas-completas.jpg",
+          "name": "Palha Italiana Gourmet Tradicional",
+          "shortDescription": "Deliciosa palha italiana feita com brigadeiro gourmet...",
+          "description": "Deliciosa palha italiana feita com brigadeiro gourmet de chocolate 50% e polvilhada com açúcar.",
+          "price": 6,
+          "stock": 72,
+          "category": "doce",
+          "type": "palha"
+        }
+      }
+    },
+    "parameters": {
+      "id": {
+        "in": "path",
+        "name": "id",
+        "description": "id of resource",
+        "schema": {
+          "type": "string"
+        },
+        "required": true
+      }
+    }
+  },
+  "paths": {
+    "/sign-up": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "User sign-up",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signUp"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created!"
+          },
+          "422": {
+            "description": "Invalid body!"
+          },
+          "500": {
+            "description": "Internal server error!"
+          }
+        }
+      }
+    },
+    "/sign-in": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "User sign-in",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Credentials ok!"
+          },
+          "404": {
+            "description": "User don`t found!"
+          },
+          "422": {
+            "description": "Invalid body!"
+          },
+          "500": {
+            "description": "Internal server error!"
+          }
+        }
+      }
+    },
+    "/products": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Create a product",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully!"
+          },
+          "401": {
+            "description": "User unauthorized!"
+          },
+          "422": {
+            "description": "Invalid body!"
+          },
+          "500": {
+            "description": "Internal server error!"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "List all products",
+        "responses": {
+          "200": {
+            "description": "Products listed successfully!"
+          },
+          "401": {
+            "description": "User unauthorized!"
+          },
+          "500": {
+            "description": "Internal server error!"
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "List all products",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product successfully!"
+          },
+          "401": {
+            "description": "User unauthorized!"
+          },
+          "404": {
+            "description": "Bad request!"
+          },
+          "409": {
+            "description": "Not Found!"
+          },
+          "500": {
+            "description": "Internal server error!"
+          }
+        }
+      }
+    }
+  }
+}

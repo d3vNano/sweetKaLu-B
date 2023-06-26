@@ -9,10 +9,19 @@ import ordersRoutes from "./routes/orders.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import userRoutes from "./routes/user.routes.js";
 
+import swaggerUi from "swagger-ui-express";
+import swaggerFile from "../swagger.json" assert { type: "json" };
+
 dotenv.config();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const options = {
+  explorer: true,
+};
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile, options));
 
 app.use(userRoutes);
 app.use(productRoutes);
